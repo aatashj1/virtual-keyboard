@@ -1,19 +1,18 @@
 const keyboardLayouts = {
-  english: [
-    "` 1 2 3 4 5 6 7 8 9 0 - =",
+  eng: ["` 1 2 3 4 5 6 7 8 9 0 - =",
     "q w e r t y u i o p [ ] \\",
     "a s d f g h j k l ; '",
-    "z x c v b n m , . /",
-  ],
-  russian: [
-    "ё 1 2 3 4 5 6 7 8 9 0 - =",
+    "z x c v b n m , . /",].map((row) => row.split(" ")),
+  ru: ["ё 1 2 3 4 5 6 7 8 9 0 - =",
     "й ц у к е н г ш щ з х ъ \\",
     "ф ы в а п р о л д ж э",
-    "я ч с м и т ь б ю .",
-  ]
+    "я ч с м и т ь б ю .",].map((row) => row.split(" ")),
+  special: ["~ ! @ # $ % ^ & * ( ) _ +", "Q W E R T Y U I O P { } |", "A S D F G H J K L : \"", "Z X C V B N M < > ?"].map((row) => row.split(" "))
 };
 
-let currentLayout = "english";
+let buttons = [];
+
+let currentLayout = "eng";
 
 const textArea = document.createElement("textarea");
 document.body.appendChild(textArea);
@@ -21,13 +20,20 @@ document.body.appendChild(textArea);
 textArea.style.width = "500px";
 textArea.style.height = "100px";
 textArea.style.margin = "10px 0 30px 0";
-textArea.onkeydown = (e) =>{
+textArea.onkeydown = (e) => {
   console.log(e);
-  let clickedButtonValue = e.key.toLowerCase().replace(" ", "");
-  let foundButton = document.querySelector(`[data-label~="${clickedButtonValue}"]`);
+  let foundButton;
+  if(e.key === "Shift"){
+    let clickedButtonValue = e.code;
+    foundButton = document.querySelector(`[data-shift~="${clickedButtonValue}"]`);
+  } else {
+    let clickedButtonValue = e.key.toLowerCase().replace(" ", "");
+     foundButton = document.querySelector(`[data-label~="${clickedButtonValue}"]`);
+  }
   foundButton.dispatchEvent(new Event('mousedown'));
+
 };
-textArea.onkeyup = (e) =>{
+textArea.onkeyup = (e) => {
   let clickedButtonValue = e.key.toLowerCase().replace(" ", "");
   let foundButton = document.querySelector(`[data-label~="${clickedButtonValue}"]`);
   console.log(foundButton);
@@ -39,12 +45,15 @@ document.body.style.flexDirection = "column";
 document.body.style.alignItems = "center";
 
 
-function createButton(label, value, size) {
+function createButton(label, ruValue, engValue, shiftValue, size) {
   const button = document.createElement("button");
   button.dataset.label = label.toLowerCase().replace(" ", "");
+  button.dataset.ru = ruValue;
+  button.dataset.eng = engValue;
+  button.dataset.shift = shiftValue;
   button.innerHTML = label;
   button.classList.add("keyboard-button");
-  button.style.width = size*50+"px";
+  button.style.width = size * 50 + "px";
   button.style.height = "50px";
   button.style.margin = "5px";
   button.style.borderRadius = "5px";
@@ -53,7 +62,7 @@ function createButton(label, value, size) {
   button.style.fontSize = "24px";
   button.style.cursor = "pointer";
   button.onclick = () => {
-    textArea.value += value;
+    textArea.value += button.dataset["value"];
   };
   button.addEventListener("mousedown", () => {
     button.style.backgroundColor = "lightblue";
@@ -70,17 +79,21 @@ function createButton(label, value, size) {
 function createKeyboard() {
   const keyboard = document.createElement("div");
   document.body.appendChild(keyboard);
-  const layout = keyboardLayouts[currentLayout];
-  for (let row of layout) {
+  for (let charRow = 0; charRow < keyboardLayouts.eng.length; charRow++) {
+    let chars = keyboardLayouts.eng[charRow];
     const div = document.createElement("div");
     div.style.display = "flex";
     div.style.justifyContent = "center";
-    for (let char of row.split(" ")) {
-      div.appendChild(createButton(char, char, 1));
+    for (let i = 0; i < chars.length; i++) {
+      let charButton = createButton(chars[i], keyboardLayouts.ru[charRow][i], keyboardLayouts.eng[charRow][i], keyboardLayouts.special[charRow][i], 1);
+      div.appendChild(charButton);
+      buttons.push(charButton);
     }
     keyboard.appendChild(div);
   }
-  initializeTab()
+  initializeTab();
+  initializeCapsLock();
+  initializeShift();
 }
 
 createKeyboard();
@@ -115,12 +128,56 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-function initializeTab(){
- let tabButton = createButton("tab", "  ", 1);
- customGetElementByText("q").before(tabButton);
+function initializeTab() {
+  let tabButton = createButton("tab","tab","tab","tab", 1);
+  customGetElementByText("q").before(tabButton);
 }
 
-function customGetElementByText(text){
+function initializeCapsLock() {
+  let capsButton = createButton("Caps Lock", "Caps Lock","Caps Lock","Caps Lock", 3);
+  capsButton.addEventListener("mousedown", (event) => {
+    buttons.forEach(button => {
+      button.innerText = button.innerText.toUpperCase();
+    })
+  });
+  capsButton.addEventListener("mouseup", (event) => {
+    buttons.forEach(button => {
+      button.innerText = button.innerText.toLowerCase();
+    })
+  });
+  customGetElementByText("a").before(capsButton);
+}
+
+function initializeShift() {
+  let shiftLeftButton = createButton("Shift", "ShiftLeft","ShiftLeft","ShiftLeft",3);
+  customGetElementByText("z").before(shiftLeftButton);
+  shiftLeftButton.addEventListener("mousedown", (event) => {
+    buttons.forEach(button => {
+      button.innerText = button.dataset.shift;
+    })
+  });
+  shiftLeftButton.addEventListener("mouseup", (event) => {
+    buttons.forEach(button => {
+      button.innerText = button.dataset[currentLayout];
+    })
+  });
+
+  let shiftRightButton = createButton("Shift", "ShiftRight","ShiftRight","ShiftRight",3);
+  customGetElementByText("/").after(shiftRightButton);
+  shiftRightButton.addEventListener("mousedown", (event) => {
+    buttons.forEach(button => {
+      button.innerText = button.dataset.shift;
+    })
+  });
+  shiftRightButton.addEventListener("mouseup", (event) => {
+    buttons.forEach(button => {
+      button.innerText = button.dataset[currentLayout];
+    })
+  });
+}
+
+
+function customGetElementByText(text) {
   return [...document.querySelectorAll('.keyboard-button')]
    .find(el => el.textContent === text);
 }
