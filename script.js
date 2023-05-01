@@ -25,33 +25,43 @@ textArea.style.margin = "10px 0 30px 0";
 textArea.onkeydown = (e) => {
   console.log(e);
   let foundButton;
-  if (e.key === "Shift" || e.key === "Alt" || e.key === "Meta") {
+  if (e.key === "Shift" || e.key === "Alt" || e.key === "Meta" || e.key ==="Backspace") {
     let clickedButtonValue = e.code;
     foundButton = document.querySelector(`[data-shift~="${clickedButtonValue}"]`);
   } else {
-    let clickedButtonValue = e.key.toLowerCase().replace(" ", "");
-    foundButton = document.querySelector(`[data-label~="${clickedButtonValue}"]`);
+    let clickedButtonValue = e.key.toLowerCase();
+    foundButton = document.querySelector(`[data-${currentLayout}~="${clickedButtonValue}"]`);
   }
   if (e.code === "Space" && e.altKey) {
     currentLayout = currentLayout === "ru" ? "eng" : "ru";
     buttons.forEach((button) => {
       button.innerHTML = button.dataset[currentLayout];
     });
+    return;
+  }
+  if(e.code === "Space"){
+    foundButton = document.querySelector(`[data-shift~="Space"]`);
   }
   foundButton.dispatchEvent(new Event('mousedown'));
-
 };
 textArea.onkeyup = (e) => {
-  let clickedButtonValue = e.key.toLowerCase().replace(" ", "");
+  let clickedButtonValue = e.key.toLowerCase();
   let foundButton;
-  if (e.key === "Shift" || e.key === "Alt" || e.key === "Meta") {
+  if (e.key === "Shift" || e.key === "Alt" || e.key === "Meta" || e.key ==="Backspace") {
     let clickedButtonValue = e.code;
     foundButton = document.querySelector(`[data-shift~="${clickedButtonValue}"]`);
   } else {
-    foundButton = document.querySelector(`[data-label~="${clickedButtonValue}"]`);
+    foundButton = document.querySelector(`[data-${currentLayout}~="${clickedButtonValue}"]`);
     console.log(foundButton);
   }
+  if (e.code === "Space" && e.altKey) {
+    return;
+  }
+  if(e.code === "Space"){
+    foundButton = document.querySelector(`[data-shift~="Space"]`);
+  }
   foundButton.dispatchEvent(new Event('mouseup'));
+
 };
 
 document.body.style.display = "flex";
@@ -61,7 +71,7 @@ document.body.style.alignItems = "center";
 
 function createButton(label, ruValue, engValue, shiftValue, size) {
   const button = document.createElement("button");
-  button.dataset.label = label.toLowerCase().replace(" ", "");
+  button.dataset.label = label.toLowerCase();
   if(label ==="option"){button.dataset.label = "AltLeft" }
   if(label ==="command"){button.dataset.label = "MetaLeft" }
 
@@ -72,6 +82,10 @@ function createButton(label, ruValue, engValue, shiftValue, size) {
   button.classList.add("keyboard-button");
   if (label === " ") {
     size = 4;
+    button.dataset.label = " ";
+    button.dataset.ru = " ";
+    button.dataset.eng = " ";
+    button.dataset.shift = "Space";
   }
   button.style.width = size * 50 + "px";
   button.style.height = "50px";
@@ -81,7 +95,14 @@ function createButton(label, ruValue, engValue, shiftValue, size) {
   button.style.color = "#fff";
   button.style.fontSize = "24px";
   button.style.cursor = "pointer";
-  button.onclick = () => {
+  button.onclick = (e) => {
+    if(button.label === " " && e.altKey){
+      currentLayout = currentLayout === "ru" ? "eng" : "ru";
+      buttons.forEach((button) => {
+        button.innerHTML = button.dataset[currentLayout];
+      });
+    }
+
     textArea.value += button.dataset[currentLayout];
   };
   button.addEventListener("mousedown", () => {
@@ -118,6 +139,7 @@ function createKeyboard() {
   initializeControl();
   initializeOption();
   initializeCommand();
+  initializeDelete();
 }
 
 createKeyboard();
@@ -239,6 +261,13 @@ function initializeFn(){
   let fnButton = createButton("Fn", "Fn", "Fn", "Fn", 1);
   customGetElementByText(" ").before(fnButton);
   fnButton.onclick = () => {
+  };
+}
+function initializeDelete(){
+  let deleteButton = createButton("Delete", "Backspace", "Backspace", "Backspace", 3);
+  customGetElementByText("=").after(deleteButton);
+  deleteButton.onclick = () => {
+
   };
 }
 
