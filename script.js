@@ -25,12 +25,18 @@ textArea.style.margin = "10px 0 30px 0";
 textArea.onkeydown = (e) => {
   console.log(e);
   let foundButton;
-  if (e.key === "Shift") {
+  if (e.key === "Shift" || e.key === "Alt" || e.key === "Meta") {
     let clickedButtonValue = e.code;
     foundButton = document.querySelector(`[data-shift~="${clickedButtonValue}"]`);
   } else {
     let clickedButtonValue = e.key.toLowerCase().replace(" ", "");
     foundButton = document.querySelector(`[data-label~="${clickedButtonValue}"]`);
+  }
+  if (e.code === "Space" && e.altKey) {
+    currentLayout = currentLayout === "ru" ? "eng" : "ru";
+    buttons.forEach((button) => {
+      button.innerHTML = button.dataset[currentLayout];
+    });
   }
   foundButton.dispatchEvent(new Event('mousedown'));
 
@@ -38,7 +44,7 @@ textArea.onkeydown = (e) => {
 textArea.onkeyup = (e) => {
   let clickedButtonValue = e.key.toLowerCase().replace(" ", "");
   let foundButton;
-  if (e.key === "Shift") {
+  if (e.key === "Shift" || e.key === "Alt" || e.key === "Meta") {
     let clickedButtonValue = e.code;
     foundButton = document.querySelector(`[data-shift~="${clickedButtonValue}"]`);
   } else {
@@ -56,13 +62,16 @@ document.body.style.alignItems = "center";
 function createButton(label, ruValue, engValue, shiftValue, size) {
   const button = document.createElement("button");
   button.dataset.label = label.toLowerCase().replace(" ", "");
+  if(label ==="option"){button.dataset.label = "AltLeft" }
+  if(label ==="command"){button.dataset.label = "MetaLeft" }
+
   button.dataset.ru = ruValue;
   button.dataset.eng = engValue;
   button.dataset.shift = shiftValue;
   button.innerHTML = label;
   button.classList.add("keyboard-button");
   if (label === " ") {
-    size = 7;
+    size = 4;
   }
   button.style.width = size * 50 + "px";
   button.style.height = "50px";
@@ -105,9 +114,10 @@ function createKeyboard() {
   initializeTab();
   initializeCapsLock();
   initializeShift();
-  InitializeCtrl();
-  InitializeWin();
-  initializeAlt();
+  initializeFn();
+  initializeControl();
+  initializeOption();
+  initializeCommand();
 }
 
 createKeyboard();
@@ -194,33 +204,41 @@ function initializeShift() {
   };
 }
 
-function initializeAlt() {
-  let altLeftButton = createButton("Alt", "AltLeft", "AltLeft", "AltLeft", 1);
-  customGetElementByText(" ").before(altLeftButton);
-  altLeftButton.onclick = () => {
+function initializeOption() {
+  let optionLeftButton = createButton("option", "AltLeft", "AltLeft", "AltLeft", 2);
+  customGetElementByText(" ").before(optionLeftButton);
+  optionLeftButton.onclick = () => {
   };
 
-  let altRightButton = createButton("Alt", "AltRight", "AltRight", "AltRight", 1);
-  customGetElementByText(" ").after(altRightButton);
-  altRightButton.onclick = () => {
+  let optionRightButton = createButton("option", "AltRight", "AltRight", "AltRight", 2);
+  customGetElementByText(" ").after(optionRightButton);
+  optionRightButton.onclick = () => {
   };
 }
 
-function InitializeCtrl() {
-  let ctrlLeftButton = createButton("Ctrl", "ControlLeft", "ControlLeft", "ControlLeft", 1);
-  customGetElementByText(" ").before(ctrlLeftButton);
-  ctrlLeftButton.onclick = () => {
+function initializeControl() {
+  let controlLeftButton = createButton("Control", "ControlLeft", "ControlLeft", "ControlLeft", 2);
+  customGetElementByText(" ").before(controlLeftButton);
+  controlLeftButton.onclick = () => {
   };
 
-  let ctrlRightButton = createButton("Ctrl", "ControlRight", "ControlRight", "ControlRight", 1);
-  customGetElementByText(" ").after(ctrlRightButton);
-  ctrlRightButton.onclick = () => {
+}
+
+function initializeCommand() {
+  let commandLeftButton = createButton("command", "MetaLeft", "MetaLeft", "MetaLeft", 3);
+  customGetElementByText(" ").before(commandLeftButton);
+  commandLeftButton.onclick = () => {
+  };
+
+  let commandRightButton = createButton("command", "MetaRight", "MetaRight", "MetaRight", 3);
+  customGetElementByText(" ").after(commandRightButton);
+  commandRightButton.onclick = () => {
   };
 }
-function InitializeWin() {
-  let winButton = createButton("Win", "Win", "Win", "Win", 1);
-  customGetElementByText(" ").before(winButton);
-  winButton.onclick = () => {
+function initializeFn(){
+  let fnButton = createButton("Fn", "Fn", "Fn", "Fn", 1);
+  customGetElementByText(" ").before(fnButton);
+  fnButton.onclick = () => {
   };
 }
 
