@@ -15,23 +15,36 @@ const keyboardLayouts = {
 
 let currentLayout = "english";
 
-const input = document.createElement("textarea");
-document.body.appendChild(input);
+const textArea = document.createElement("textarea");
+document.body.appendChild(textArea);
 
-input.style.width = "500px";
-input.style.height = "100px";
-input.style.margin = "10px 0 30px 0";
+textArea.style.width = "500px";
+textArea.style.height = "100px";
+textArea.style.margin = "10px 0 30px 0";
+textArea.onkeydown = (e) =>{
+  console.log(e);
+  let clickedButtonValue = e.key.toLowerCase().replace(" ", "");
+  let foundButton = document.querySelector(`[data-label~="${clickedButtonValue}"]`);
+  foundButton.dispatchEvent(new Event('mousedown'));
+};
+textArea.onkeyup = (e) =>{
+  let clickedButtonValue = e.key.toLowerCase().replace(" ", "");
+  let foundButton = document.querySelector(`[data-label~="${clickedButtonValue}"]`);
+  console.log(foundButton);
+  foundButton.dispatchEvent(new Event('mouseup'));
+};
 
 document.body.style.display = "flex";
 document.body.style.flexDirection = "column";
 document.body.style.alignItems = "center";
 
 
-function createButton(char) {
+function createButton(label, value, size) {
   const button = document.createElement("button");
-  button.innerHTML = char;
+  button.dataset.label = label.toLowerCase().replace(" ", "");
+  button.innerHTML = label;
   button.classList.add("keyboard-button");
-  button.style.width = "50px";
+  button.style.width = size*50+"px";
   button.style.height = "50px";
   button.style.margin = "5px";
   button.style.borderRadius = "5px";
@@ -39,14 +52,18 @@ function createButton(char) {
   button.style.color = "#fff";
   button.style.fontSize = "24px";
   button.style.cursor = "pointer";
-  button.addEventListener("click", () => {
-    input.value += char;
-  });
-
-  button.addEventListener("focus", () => {
+  button.onclick = () => {
+    textArea.value += value;
+  };
+  button.addEventListener("mousedown", () => {
     button.style.backgroundColor = "lightblue";
     button.style.color = "#000";
   });
+  button.addEventListener("mouseup", () => {
+    button.style.backgroundColor = "#1e3a8a";
+    button.style.color = "white";
+  });
+
   return button;
 }
 
@@ -59,10 +76,11 @@ function createKeyboard() {
     div.style.display = "flex";
     div.style.justifyContent = "center";
     for (let char of row.split(" ")) {
-      div.appendChild(createButton(char));
+      div.appendChild(createButton(char, char, 1));
     }
     keyboard.appendChild(div);
   }
+  initializeTab()
 }
 
 createKeyboard();
@@ -87,17 +105,23 @@ document.addEventListener("keydown", (event) => {
   } else if (event.code === "ArrowRight") {
 
   } else if (event.code === "Enter") {
-    input.value += "\n";
+    textArea.value += "\n";
   } else if (event.code === "Tab") {
-    input.value += " ";
+    textArea.value += "  ";
   } else if (event.code === "Backspace") {
-    input.value = input.value.slice(0, -1);
+    textArea.value = textArea.value.slice(0, -1);
   } else if (event.code === "Delete") {
-    input.value = input.value.slice(0, -1);
+    textArea.value = textArea.value.slice(0, -1);
   }
 });
 
+function initializeTab(){
+ let tabButton = createButton("tab", "  ", 1);
+ customGetElementByText("q").before(tabButton);
+}
 
-
-
+function customGetElementByText(text){
+  return [...document.querySelectorAll('.keyboard-button')]
+   .find(el => el.textContent === text);
+}
 
