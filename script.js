@@ -1,13 +1,15 @@
 const keyboardLayouts = {
-  eng: ["` 1 2 3 4 5 6 7 8 9 0 - =",
-    "q w e r t y u i o p [ ] \\",
-    "a s d f g h j k l ; '",
-    "z x c v b n m , . /",].map((row) => row.split(" ")),
-  ru: ["ё 1 2 3 4 5 6 7 8 9 0 - =",
-    "й ц у к е н г ш щ з х ъ \\",
-    "ф ы в а п р о л д ж э",
-    "я ч с м и т ь б ю .",].map((row) => row.split(" ")),
-  special: ["~ ! @ # $ % ^ & * ( ) _ +", "Q W E R T Y U I O P { } |", "A S D F G H J K L : \"", "Z X C V B N M < > ?"].map((row) => row.split(" "))
+  eng: ["`1234567890-=",
+    "qwertyuiop[]\\",
+    "asdfghjkl;'",
+    "zxcvbnm,./",
+    " "].map((row) => row.split("")),
+  ru: ["ё1234567890-=",
+    "йцукенгшщзхъ\\",
+    "фывапролджэ",
+    "ячсмитьбю.",
+    " "].map((row) => row.split("")),
+  special: ["~!@#$%^&*()_+", "QWERTYUIOP{}|", "ASDFGHJKL:\"", "ZXCVBNM<>?", " "].map((row) => row.split(""))
 };
 
 let buttons = [];
@@ -23,20 +25,26 @@ textArea.style.margin = "10px 0 30px 0";
 textArea.onkeydown = (e) => {
   console.log(e);
   let foundButton;
-  if(e.key === "Shift"){
+  if (e.key === "Shift") {
     let clickedButtonValue = e.code;
     foundButton = document.querySelector(`[data-shift~="${clickedButtonValue}"]`);
   } else {
     let clickedButtonValue = e.key.toLowerCase().replace(" ", "");
-     foundButton = document.querySelector(`[data-label~="${clickedButtonValue}"]`);
+    foundButton = document.querySelector(`[data-label~="${clickedButtonValue}"]`);
   }
   foundButton.dispatchEvent(new Event('mousedown'));
 
 };
 textArea.onkeyup = (e) => {
   let clickedButtonValue = e.key.toLowerCase().replace(" ", "");
-  let foundButton = document.querySelector(`[data-label~="${clickedButtonValue}"]`);
-  console.log(foundButton);
+  let foundButton;
+  if (e.key === "Shift") {
+    let clickedButtonValue = e.code;
+    foundButton = document.querySelector(`[data-shift~="${clickedButtonValue}"]`);
+  } else {
+    foundButton = document.querySelector(`[data-label~="${clickedButtonValue}"]`);
+    console.log(foundButton);
+  }
   foundButton.dispatchEvent(new Event('mouseup'));
 };
 
@@ -53,6 +61,9 @@ function createButton(label, ruValue, engValue, shiftValue, size) {
   button.dataset.shift = shiftValue;
   button.innerHTML = label;
   button.classList.add("keyboard-button");
+  if (label === " ") {
+    size = 7;
+  }
   button.style.width = size * 50 + "px";
   button.style.height = "50px";
   button.style.margin = "5px";
@@ -62,7 +73,7 @@ function createButton(label, ruValue, engValue, shiftValue, size) {
   button.style.fontSize = "24px";
   button.style.cursor = "pointer";
   button.onclick = () => {
-    textArea.value += button.dataset["value"];
+    textArea.value += button.dataset[currentLayout];
   };
   button.addEventListener("mousedown", () => {
     button.style.backgroundColor = "lightblue";
@@ -94,6 +105,9 @@ function createKeyboard() {
   initializeTab();
   initializeCapsLock();
   initializeShift();
+  InitializeCtrl();
+  InitializeWin();
+  initializeAlt();
 }
 
 createKeyboard();
@@ -129,12 +143,12 @@ document.addEventListener("keydown", (event) => {
 });
 
 function initializeTab() {
-  let tabButton = createButton("tab","tab","tab","tab", 1);
+  let tabButton = createButton("Tab", "Tab", "Tab", "Tab", 1);
   customGetElementByText("q").before(tabButton);
 }
 
 function initializeCapsLock() {
-  let capsButton = createButton("Caps Lock", "Caps Lock","Caps Lock","Caps Lock", 3);
+  let capsButton = createButton("Caps Lock", "Caps Lock", "Caps Lock", "Caps Lock", 3);
   capsButton.addEventListener("mousedown", (event) => {
     buttons.forEach(button => {
       button.innerText = button.innerText.toUpperCase();
@@ -149,7 +163,7 @@ function initializeCapsLock() {
 }
 
 function initializeShift() {
-  let shiftLeftButton = createButton("Shift", "ShiftLeft","ShiftLeft","ShiftLeft",3);
+  let shiftLeftButton = createButton("Shift", "ShiftLeft", "ShiftLeft", "ShiftLeft", 3);
   customGetElementByText("z").before(shiftLeftButton);
   shiftLeftButton.addEventListener("mousedown", (event) => {
     buttons.forEach(button => {
@@ -161,8 +175,10 @@ function initializeShift() {
       button.innerText = button.dataset[currentLayout];
     })
   });
+  shiftLeftButton.onclick = () => {
+  };
 
-  let shiftRightButton = createButton("Shift", "ShiftRight","ShiftRight","ShiftRight",3);
+  let shiftRightButton = createButton("Shift", "ShiftRight", "ShiftRight", "ShiftRight", 3);
   customGetElementByText("/").after(shiftRightButton);
   shiftRightButton.addEventListener("mousedown", (event) => {
     buttons.forEach(button => {
@@ -174,8 +190,39 @@ function initializeShift() {
       button.innerText = button.dataset[currentLayout];
     })
   });
+  shiftRightButton.onclick = () => {
+  };
 }
 
+function initializeAlt() {
+  let altLeftButton = createButton("Alt", "AltLeft", "AltLeft", "AltLeft", 1);
+  customGetElementByText(" ").before(altLeftButton);
+  altLeftButton.onclick = () => {
+  };
+
+  let altRightButton = createButton("Alt", "AltRight", "AltRight", "AltRight", 1);
+  customGetElementByText(" ").after(altRightButton);
+  altRightButton.onclick = () => {
+  };
+}
+
+function InitializeCtrl() {
+  let ctrlLeftButton = createButton("Ctrl", "ControlLeft", "ControlLeft", "ControlLeft", 1);
+  customGetElementByText(" ").before(ctrlLeftButton);
+  ctrlLeftButton.onclick = () => {
+  };
+
+  let ctrlRightButton = createButton("Ctrl", "ControlRight", "ControlRight", "ControlRight", 1);
+  customGetElementByText(" ").after(ctrlRightButton);
+  ctrlRightButton.onclick = () => {
+  };
+}
+function InitializeWin() {
+  let winButton = createButton("Win", "Win", "Win", "Win", 1);
+  customGetElementByText(" ").before(winButton);
+  winButton.onclick = () => {
+  };
+}
 
 function customGetElementByText(text) {
   return [...document.querySelectorAll('.keyboard-button')]
