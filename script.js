@@ -276,3 +276,13 @@ function customGetElementByText(text) {
    .find(el => el.textContent === text);
 }
 
+
+
+  const span = document.createElement("span");
+  document.body.appendChild(span);
+span.style.width = "400px";
+span.style.height = "30px";
+span.style.margin = "20px";
+span.style.fontSize = "20px";
+span.textContent = "Note: change language with option+space";
+
